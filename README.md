@@ -1,30 +1,19 @@
-# React + TypeScript + Vite
+# Snake
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[link](link)
 
-Currently, two official plugins are available:
+## Development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+All built on the main git branch for now.
 
-## Expanding the ESLint configuration
+## Deployment
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+Not deployed anywhere yet - [link](link)
 
-- Configure the top-level `parserOptions` property like this:
+## About
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
+A simple game of snake, using keyboard controls, based on the 90's Nokia classic.
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+### References:
+
+[Scaffold docs](./docs/scaffold.md)
