@@ -55,8 +55,9 @@ h1 {
   background-color: greenyellow;
   /* position: relative; */
   display: grid;
-  grid-template-columns: repeat(8, 1px);
-  grid-template-rows: repeat(8, 1px);
+  grid-template-columns: repeat(84, 1px);
+  grid-template-rows: repeat(48, 1px);
+  transform: scale(4);
 }
 
 .pixel {
