@@ -5,6 +5,7 @@
 ## Development
 
 All built on the main git branch for now.
+`$ npm run dev` then `$ open http://localhost:5173/` or [localhost](http://localhost:5173/)
 
 ## Deployment
 
