@@ -1,33 +1,62 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from "react"
+
+interface ISnake {
+  body: string[];
+  heading: string;
+}
+
+function handleKeyDown(event: KeyboardEvent) {
+  if (event.code === "Enter") {
+    console.log("Enter"); 
+  } else if (event.code === "ArrowLeft") {
+    console.log("ArrowLeft"); 
+  } else if (event.code === "ArrowRight") {
+    console.log("ArrowRight"); 
+  } else if (event.code === "Space") {
+    console.log("Space"); 
+  } else {
+    // do nothing
+  }
+}
+
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [snake] = useState({
+    body: ["4_2"],
+    heading: "N"
+  });
+
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    }
+  }, []);
 
   return (
+    <div className="board">
+      <Pixels snake={snake} />
+    </div>
+  )
+}
+
+function Pixels({snake}: {snake: ISnake}) {
+  return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      {
+        new Array((4*8)).fill(0).map((item, key) => {
+          const index = key + 1;
+          const y = Math.ceil(index / 8);
+          const x = 8 + index - (y*8);
+          
+          if (!snake.body.includes(`${x}_${y}`)) {
+            return <span key={key} className="pixel"></span>
+          } else {
+            return <span key={key} className="pixel pixel-active"></span>
+          }
+        })
+      }
     </>
   )
 }
