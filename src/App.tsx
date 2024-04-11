@@ -5,27 +5,31 @@ interface ISnake {
   heading: string;
 }
 
-function handleKeyDown(event: KeyboardEvent) {
-  if (event.code === "Enter") {
-    console.log("Enter"); 
-  } else if (event.code === "ArrowLeft") {
-    console.log("ArrowLeft"); 
-  } else if (event.code === "ArrowRight") {
-    console.log("ArrowRight"); 
-  } else if (event.code === "Space") {
-    console.log("Space"); 
-  } else {
-    // do nothing
-  }
-}
-
-
 function App() {
-  const [snake] = useState({
+  const initialSnake: ISnake = {
     body: ["4_2"],
     heading: "N"
-  });
-
+  }
+  const [snake, setSnake] = useState(initialSnake);
+  const [playing, setPlaying] = useState(false);
+  const [frame, setFrame] = useState(0);
+  
+  function handleKeyDown(event: KeyboardEvent) {
+    if (event.code === "Enter") {
+      console.log("Enter :: reset"); 
+      setPlaying(false);
+      setSnake(initialSnake);
+    } else if (event.code === "ArrowLeft") {
+      console.log("ArrowLeft :: updateHeading"); 
+    } else if (event.code === "ArrowRight") {
+      console.log("ArrowRight :: updateHeading"); 
+    } else if (event.code === "Space") {
+      console.log("Space :: play/pause");
+      setPlaying((oldState) => !oldState);
+    } else {
+      // do nothing
+    }
+  }
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -33,6 +37,15 @@ function App() {
       window.removeEventListener("keydown", handleKeyDown);
     }
   }, []);
+
+  useEffect(() => {
+    if(playing) {
+      console.log(frame);
+      setTimeout(() => {
+        setFrame(frame => frame + 1 > 2 ? 0 : frame + 1);
+      }, 1000/2);
+    }
+  }, [playing, frame]);
 
   return (
     <div className="board">
