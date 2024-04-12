@@ -1,6 +1,6 @@
 # Snake
 
-[link](link)
+![screenshot of landing page](./docs/cover-image.jpg "Snake Game homepage")
 
 ## Development
 
@@ -9,7 +9,7 @@ All built on the main git branch for now.
 
 ## Deployment
 
-Not deployed anywhere yet - [link](link)
+Deployed on Vercel - [https://snake-game-ten-beryl.vercel.app/](https://snake-game-ten-beryl.vercel.app/)
 
 ## About
 
