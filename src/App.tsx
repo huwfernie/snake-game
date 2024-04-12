@@ -47,12 +47,13 @@ function App() {
 
         const newSnakeHead = `${x}_${y}`;
         _snake.unshift(newSnakeHead);
-        _snake.pop();
-
+        
         // handle eating fruit
         if(fruit.current.x === x && fruit.current.y === y) {
           console.log("FRUIT");
           generateFruit();
+        } else {
+          _snake.pop();
         }
 
         // animate

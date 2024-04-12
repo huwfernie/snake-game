@@ -13,8 +13,8 @@
 1. *set up random pixel (number) generator for fruit*
 1. *check if snake is on fruit and regenerate if needed or add fruit to screen*
 1. setup animation loop (@24fps?)
-    - check if snake eats fruit
-        - grow snake
+    - *check if snake eats fruit*
+        - *grow snake*
         - add points?
     - *check if snake eats walls*
         - *game over*
