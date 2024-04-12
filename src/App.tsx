@@ -19,6 +19,7 @@ function App() {
   const gamePausedRef = useRef(true);
 
   const [snake, setSnake] = useState(initialSnake);
+  const [fruit, setFruit] = useState({ x: 84, y: 48 });
 
   const animate = useCallback(() => {
     if (gamePausedRef.current === false) {
@@ -32,7 +33,7 @@ function App() {
       const willHitTop = y === boardHeight - 1 && snakeRef.current.heading === "N";
       const willHitLeft = x === 0 && snakeRef.current.heading === "W";
       const willHitRight = x === boardWidth - 1 && snakeRef.current.heading === "E";
-      
+
       if (willHitBottom || willHitTop || willHitLeft || willHitRight) {
         console.log("loose");
         gamePausedRef.current = true;
@@ -53,6 +54,19 @@ function App() {
           return { ...snake, body: _snake }
         });
       }
+    }
+  }, []);
+
+  const generateFruit = useCallback(() => {
+    function getRandomInt(max: number) {
+      return Math.floor(Math.random() * max);
+    }
+    const newFruit = { x: getRandomInt(boardWidth), y: getRandomInt(boardHeight)}
+    // don't place fruit if it's on the snake
+    if (snakeRef.current.body.includes(`${newFruit.x}_${newFruit.y}`)) {
+      generateFruit();
+    } else {
+      setFruit({ x: getRandomInt(boardWidth), y: getRandomInt(boardHeight)})
     }
   }, []);
 
@@ -117,16 +131,19 @@ function App() {
       }
     }
 
+    generateFruit();
+
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     }
-  }, [animate]);
+  }, [animate, generateFruit]);
 
   return (
     <>
       <div className="board">
         <Pixels snake={snake} />
+        <Fruit x={fruit.x} y={fruit.y} />
       </div>
       <div>Snake: {JSON.stringify(snake)}</div>
       <div>Snake: {JSON.stringify(initialSnake)}</div>
@@ -141,11 +158,15 @@ function Pixels({ snake }: { snake: ISnake }) {
       {
         snake.body.map((item, key) => {
           const [x, y] = item.split("_").map((el) => parseInt(el));
-          return <span key={key+item} className="pixel pixel-active" id={`${x}_${y}`} style={{ position: "absolute", bottom: y, left: x }}></span>
+          return <span key={key + item} className="pixel pixel-active" id={`${x}_${y}`} style={{ position: "absolute", bottom: y, left: x }}></span>
         })
       }
     </>
   )
+}
+
+function Fruit({ x, y }: {x: number, y: number }) {
+  return <span className="pixel pixel-active pixel-fruit" style={{ position: "absolute", bottom: y, left: x }}></span>
 }
 
 export default App
