@@ -5,22 +5,42 @@ interface ISnake {
   heading: string;
 }
 
+interface IFruit {
+  x: number;
+  y: number;
+}
+
 const boardHeight = 48;
 const boardWidth = 84;
 
 function App() {
-  const initialSnake: ISnake = {
-    body: ["42_24","42_23","42_22","42_21","42_20","42_19","42_18","42_17"],
-    heading: "N"
-  }
+  const initialSnake = useCallback(() => {
+    return {
+      body: ["42_24", "42_23", "42_22", "42_21", "42_20", "42_19", "42_18", "42_17"],
+      heading: "N"
+    }
+  }, []);
 
-  const snakeRef = useRef(initialSnake);
+  const snakeRef = useRef(initialSnake());
   const intervalRef = useRef(0);
   const gamePausedRef = useRef(true);
   const gameOverRef = useRef(false);
   const fruitRef = useRef({ x: 84, y: 48 });
 
-  const [snake, setSnake] = useState(initialSnake);
+  const [snake, setSnake] = useState(initialSnake());
+
+  const generateFruit = useCallback(() => {
+    function getRandomInt(max: number) {
+      return Math.floor(Math.random() * max);
+    }
+    const newFruit = { x: getRandomInt(boardWidth), y: getRandomInt(boardHeight) }
+    // don't place fruit if it's on the snake
+    if (snakeRef.current.body.includes(`${newFruit.x}_${newFruit.y}`)) {
+      generateFruit();
+    } else {
+      fruitRef.current = { x: getRandomInt(boardWidth), y: getRandomInt(boardHeight) }
+    }
+  }, []);
 
   const animate = useCallback(() => {
     if (gamePausedRef.current === false) {
@@ -46,9 +66,9 @@ function App() {
         if (snakeRef.current.heading === "S") { y = y - 1 }
         if (snakeRef.current.heading === "E") { x = x + 1 }
         if (snakeRef.current.heading === "W") { x = x - 1 }
-        
+
         const newSnakeHead = `${x}_${y}`;
-        
+
         // IF newSnakeHead exists in snake - loose condition: don't eat yourself
         if (snakeRef.current.body.includes(newSnakeHead)) {
           // console.log("loose condition: don't eat yourself");
@@ -59,9 +79,9 @@ function App() {
         }
 
         _snake.unshift(newSnakeHead);
-        
+
         // handle eating fruit
-        if(fruitRef.current.x === x && fruitRef.current.y === y) {
+        if (fruitRef.current.x === x && fruitRef.current.y === y) {
           generateFruit();
         } else {
           _snake.pop();
@@ -73,20 +93,7 @@ function App() {
         });
       }
     }
-  }, []);
-
-  const generateFruit = useCallback(() => {
-    function getRandomInt(max: number) {
-      return Math.floor(Math.random() * max);
-    }
-    const newFruit = { x: getRandomInt(boardWidth), y: getRandomInt(boardHeight)}
-    // don't place fruit if it's on the snake
-    if (snakeRef.current.body.includes(`${newFruit.x}_${newFruit.y}`)) {
-      generateFruit();
-    } else {
-      fruitRef.current = { x: getRandomInt(boardWidth), y: getRandomInt(boardHeight)}
-    }
-  }, []);
+  }, [generateFruit]);
 
   useEffect(() => {
     function tick() {
@@ -113,18 +120,16 @@ function App() {
     }
 
     function resetGame() {
-      snakeRef.current = {
-        body: ["42_24","42_23","42_22"],
-        heading: "N"
-      };
+      snakeRef.current = initialSnake();
       gamePausedRef.current = true;
       clearInterval(intervalRef.current);
       intervalRef.current = 0;
       gameOverRef.current = false;
-      setSnake(snakeRef.current);
+      setSnake(initialSnake());
     }
 
     function handleKeyDown(event: KeyboardEvent) {
+      const compass = ["N", "E", "S", "W"];
       if (event.code === "Enter") {
         // console.log("Enter :: reset");
         resetGame();
@@ -133,7 +138,7 @@ function App() {
         if (gamePausedRef.current === false) {
           snakeRef.current = {
             ...snakeRef.current,
-            heading: ["N", "E", "S", "W"][(["N", "E", "S", "W"].indexOf(snakeRef.current.heading)) - 1] || "W"
+            heading: compass[(compass.indexOf(snakeRef.current.heading)) - 1] || "W"
           }
         }
       } else if (event.code === "ArrowRight") {
@@ -141,7 +146,7 @@ function App() {
         if (gamePausedRef.current === false) {
           snakeRef.current = {
             ...snakeRef.current,
-            heading: ["N", "E", "S", "W"][(["N", "E", "S", "W"].indexOf(snakeRef.current.heading)) + 1] || "N"
+            heading: compass[(compass.indexOf(snakeRef.current.heading)) + 1] || "N"
           }
         }
       } else if (event.code === "Space") {
@@ -158,32 +163,32 @@ function App() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     }
-  }, [animate, generateFruit]);
+  }, [animate, generateFruit, initialSnake]);
 
   return (
     <>
       <div className="board">
-        <Pixels snake={snake} />
+        <SnakePixels snake={snake} />
         <Fruit x={fruitRef.current.x} y={fruitRef.current.y} />
       </div>
     </>
   )
 }
 
-function Pixels({ snake }: { snake: ISnake }) {
+function SnakePixels({ snake }: { snake: ISnake }) {
   return (
     <>
       {
         snake.body.map((item, key) => {
           const [x, y] = item.split("_").map((el) => parseInt(el));
-          return <span key={key + item} className="pixel pixel-active" id={`${x}_${y}`} style={{ position: "absolute", bottom: y, left: x }}></span>
+          return <span key={key + item} className="pixel pixel-active" style={{ position: "absolute", bottom: y, left: x }}></span>
         })
       }
     </>
   )
 }
 
-function Fruit({ x, y }: {x: number, y: number }) {
+function Fruit({ x, y }: IFruit) {
   return <span className="pixel pixel-active pixel-fruit" style={{ position: "absolute", bottom: y, left: x }}></span>
 }
 
