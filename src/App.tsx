@@ -1,117 +1,137 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 
 interface ISnake {
   body: string[];
   heading: string;
-  started: boolean;
-  paused: boolean;
 }
 
-const fortyEight = 48;
-const eightyFour = 84;
+const boardHeight = 48;
+const boardWidth = 84;
 
 function App() {
   const initialSnake: ISnake = {
-    body: [`${eightyFour / 2}_${fortyEight / 2}`],
-    heading: "N",
-    started: false,
-    paused: false,
+    body: ["42_24"],
+    heading: "N"
   }
+
+  const snakeRef = useRef(initialSnake);
+  const intervalRef = useRef(0);
+  const gamePausedRef = useRef(true);
+
   const [snake, setSnake] = useState(initialSnake);
-  const [frame, setFrame] = useState(0);
 
-  
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.code === "Enter") {
-        console.log("Enter :: reset");
-        setSnake(initialSnake);
-      } else if (event.code === "ArrowLeft") {
-        console.log("ArrowLeft :: updateHeading");
-        setSnake((snake) => {
-          if (snake.started) {
-            return { ...snake, heading: ["N", "E", "S", "W"][(["N", "E", "S", "W"].indexOf(snake.heading)) - 1] || "W" }
-          } else {
-            return snake;
-          }
-        });
-      } else if (event.code === "ArrowRight") {
-        console.log("ArrowRight :: updateHeading");
-        setSnake((snake) => {
-          if (snake.started) {
-            return { ...snake, heading: ["N", "E", "S", "W"][(["N", "E", "S", "W"].indexOf(snake.heading)) + 1] || "N" }
-          } else {
-            return snake;
-          }
-        });
-      } else if (event.code === "Space") {
-        console.log("Space :: play/pause");
-        setSnake((snake) => {
-          return {
-            ...snake,
-            paused: !snake.paused,
-            started: true
-          }
-        });
-      } else {
-        // do nothing
-      }
-    }
-    
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    }
-  }, []);
-
-  useEffect(() => {    
-    if (snake.started) {
-      // 1. check direction and add new "head" to snake
-      // 2. check for wall collision
-      // 3. check for snake collision
-      // 4. remove tail from snake
-      const _snake = snake.body;
+  const animate = useCallback(() => {
+    if (gamePausedRef.current === false) {
+      const _snake = snakeRef.current.body;
       const head = _snake[0];
       let x = parseInt(head.split("_")[0]);
       let y = parseInt(head.split("_")[1]);
 
       // Loose conditions
-      if (
-        x === 0 ||
-        x === eightyFour ||
-        y === 0 ||
-        y === fortyEight
-      ) {
-        alert("loose");
-        setSnake(initialSnake);
+      const willHitBottom = y === 0 && snakeRef.current.heading === "S";
+      const willHitTop = y === boardHeight - 1 && snakeRef.current.heading === "N";
+      const willHitLeft = x === 0 && snakeRef.current.heading === "W";
+      const willHitRight = x === boardWidth - 1 && snakeRef.current.heading === "E";
+      
+      if (willHitBottom || willHitTop || willHitLeft || willHitRight) {
+        console.log("loose");
+        gamePausedRef.current = true;
+        clearInterval(intervalRef.current);
+        intervalRef.current = 0;
       } else {
-        if (snake.heading === "N") { y = y + 1 }
-        if (snake.heading === "S") { y = y - 1 }
-        if (snake.heading === "E") { x = x + 1 }
-        if (snake.heading === "W") { x = x - 1 }
+        if (snakeRef.current.heading === "N") { y = y + 1 }
+        if (snakeRef.current.heading === "S") { y = y - 1 }
+        if (snakeRef.current.heading === "E") { x = x + 1 }
+        if (snakeRef.current.heading === "W") { x = x - 1 }
 
         const newSnakeHead = `${x}_${y}`;
         _snake.unshift(newSnakeHead);
         _snake.pop();
 
         // animate
-        setSnake((snake) => { return { ...snake, body: _snake } });
-
-        // @TODO - could update this to reference the last updated time in order to maintain regular update rate if thread is blocked
-        setTimeout(() => {
-          setFrame(frame => frame + 1 > 2 ? 0 : frame + 1);
-        }, 1000 / 8);
-
+        setSnake((snake) => {
+          return { ...snake, body: _snake }
+        });
       }
-
-
     }
-  }, [snake, frame, initialSnake]);
+  }, []);
+
+  useEffect(() => {
+    function tick() {
+      if (intervalRef.current !== 0) {
+        // timer interval already set up, do nothing
+      } else {
+        intervalRef.current = setInterval(() => {
+          animate();
+        }, 125);
+      }
+    }
+
+    function pauseGame() {
+      if (gamePausedRef.current === false) {
+        gamePausedRef.current = true;
+        clearInterval(intervalRef.current);
+        intervalRef.current = 0;
+      } else {
+        gamePausedRef.current = false;
+        tick();
+      }
+    }
+
+    function resetGame() {
+      snakeRef.current = {
+        body: ["42_24"],
+        heading: "N"
+      };
+      gamePausedRef.current = true;
+      clearInterval(intervalRef.current);
+      intervalRef.current = 0;
+      setSnake(snakeRef.current);
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.code === "Enter") {
+        // console.log("Enter :: reset");
+        resetGame();
+      } else if (event.code === "ArrowLeft") {
+        // console.log("ArrowLeft :: updateHeading");
+        if (gamePausedRef.current === false) {
+          snakeRef.current = {
+            ...snakeRef.current,
+            heading: ["N", "E", "S", "W"][(["N", "E", "S", "W"].indexOf(snakeRef.current.heading)) - 1] || "W"
+          }
+        }
+      } else if (event.code === "ArrowRight") {
+        // console.log("ArrowRight :: updateHeading");
+        if (gamePausedRef.current === false) {
+          snakeRef.current = {
+            ...snakeRef.current,
+            heading: ["N", "E", "S", "W"][(["N", "E", "S", "W"].indexOf(snakeRef.current.heading)) + 1] || "N"
+          }
+        }
+      } else if (event.code === "Space") {
+        // console.log("Space :: play/pause");
+        pauseGame();
+      } else {
+        // do nothing
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    }
+  }, [animate]);
 
   return (
-    <div className="board">
-      <Pixels snake={snake} />
-    </div>
+    <>
+      <div className="board">
+        <Pixels snake={snake} />
+      </div>
+      <div>Snake: {JSON.stringify(snake)}</div>
+      <div>Snake: {JSON.stringify(initialSnake)}</div>
+      <div>Snake: {JSON.stringify(snakeRef.current)}</div>
+    </>
   )
 }
 
@@ -119,17 +139,9 @@ function Pixels({ snake }: { snake: ISnake }) {
   return (
     <>
       {
-        new Array((fortyEight * eightyFour)).fill(0).map((item, key) => {
-          const index = key + 1;
-          const _y = Math.ceil(index / eightyFour);
-          const y = (fortyEight + 1) - Math.ceil(index / eightyFour);
-          const x = eightyFour + index - (_y * eightyFour);
-
-          if (!snake.body.includes(`${x}_${y}`)) {
-            return <span key={key} className="pixel" id={`${x}_${y}`}></span>
-          } else {
-            return <span key={key} className="pixel pixel-active" id={`${x}_${y}`}></span>
-          }
+        snake.body.map((item, key) => {
+          const [x, y] = item.split("_").map((el) => parseInt(el));
+          return <span key={key+item} className="pixel pixel-active" id={`${x}_${y}`} style={{ position: "absolute", bottom: y, left: x }}></span>
         })
       }
     </>

@@ -49,14 +49,15 @@ h1 {
 */
 
 .board {
-  min-width: 8px;
-  min-height: 4px;
+  width: 84px;
+  height: 48px;
   border: 1px solid black;
   background-color: greenyellow;
-  /* position: relative; */
+  position: relative;
   display: grid;
   grid-template-columns: repeat(84, 1px);
   grid-template-rows: repeat(48, 1px);
+  margin: 100px;
   transform: scale(4);
 }
 
