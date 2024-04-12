@@ -10,16 +10,17 @@ const boardWidth = 84;
 
 function App() {
   const initialSnake: ISnake = {
-    body: ["42_24"],
+    body: ["42_24","42_23","42_22","42_21","42_20","42_19","42_18","42_17"],
     heading: "N"
   }
 
   const snakeRef = useRef(initialSnake);
   const intervalRef = useRef(0);
   const gamePausedRef = useRef(true);
+  const gameOverRef = useRef(false);
+  const fruitRef = useRef({ x: 84, y: 48 });
 
   const [snake, setSnake] = useState(initialSnake);
-  const fruit = useRef({ x: 84, y: 48 });
 
   const animate = useCallback(() => {
     if (gamePausedRef.current === false) {
@@ -35,22 +36,32 @@ function App() {
       const willHitRight = x === boardWidth - 1 && snakeRef.current.heading === "E";
 
       if (willHitBottom || willHitTop || willHitLeft || willHitRight) {
-        console.log("loose");
+        // console.log("loose condition: don't hit the wall");
         gamePausedRef.current = true;
         clearInterval(intervalRef.current);
         intervalRef.current = 0;
+        gameOverRef.current = true;
       } else {
         if (snakeRef.current.heading === "N") { y = y + 1 }
         if (snakeRef.current.heading === "S") { y = y - 1 }
         if (snakeRef.current.heading === "E") { x = x + 1 }
         if (snakeRef.current.heading === "W") { x = x - 1 }
-
+        
         const newSnakeHead = `${x}_${y}`;
+        
+        // IF newSnakeHead exists in snake - loose condition: don't eat yourself
+        if (snakeRef.current.body.includes(newSnakeHead)) {
+          // console.log("loose condition: don't eat yourself");
+          gamePausedRef.current = true;
+          clearInterval(intervalRef.current);
+          intervalRef.current = 0;
+          gameOverRef.current = true;
+        }
+
         _snake.unshift(newSnakeHead);
         
         // handle eating fruit
-        if(fruit.current.x === x && fruit.current.y === y) {
-          console.log("FRUIT");
+        if(fruitRef.current.x === x && fruitRef.current.y === y) {
           generateFruit();
         } else {
           _snake.pop();
@@ -73,7 +84,7 @@ function App() {
     if (snakeRef.current.body.includes(`${newFruit.x}_${newFruit.y}`)) {
       generateFruit();
     } else {
-      fruit.current = { x: getRandomInt(boardWidth), y: getRandomInt(boardHeight)}
+      fruitRef.current = { x: getRandomInt(boardWidth), y: getRandomInt(boardHeight)}
     }
   }, []);
 
@@ -89,24 +100,27 @@ function App() {
     }
 
     function pauseGame() {
-      if (gamePausedRef.current === false) {
-        gamePausedRef.current = true;
-        clearInterval(intervalRef.current);
-        intervalRef.current = 0;
-      } else {
-        gamePausedRef.current = false;
-        tick();
+      if (gameOverRef.current === false) {
+        if (gamePausedRef.current === false) {
+          gamePausedRef.current = true;
+          clearInterval(intervalRef.current);
+          intervalRef.current = 0;
+        } else {
+          gamePausedRef.current = false;
+          tick();
+        }
       }
     }
 
     function resetGame() {
       snakeRef.current = {
-        body: ["42_24"],
+        body: ["42_24","42_23","42_22"],
         heading: "N"
       };
       gamePausedRef.current = true;
       clearInterval(intervalRef.current);
       intervalRef.current = 0;
+      gameOverRef.current = false;
       setSnake(snakeRef.current);
     }
 
@@ -150,12 +164,8 @@ function App() {
     <>
       <div className="board">
         <Pixels snake={snake} />
-        <Fruit x={fruit.current.x} y={fruit.current.y} />
+        <Fruit x={fruitRef.current.x} y={fruitRef.current.y} />
       </div>
-      <div>Snake: {JSON.stringify(snake)}</div>
-      <div>Snake: {JSON.stringify(initialSnake)}</div>
-      <div>Snake: {JSON.stringify(snakeRef.current)}</div>
-      <div>Snake: {JSON.stringify(fruit)}</div>
     </>
   )
 }

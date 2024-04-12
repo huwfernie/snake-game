@@ -18,5 +18,9 @@
         - add points?
     - *check if snake eats walls*
         - *game over*
-    - check if snake eats snake
-        - game over
+    - *check if snake eats snake*
+        - *game over*
+
+
+1. setup light/dark theme
+1. Check layouts
