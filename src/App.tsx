@@ -19,7 +19,7 @@ function App() {
   const gamePausedRef = useRef(true);
 
   const [snake, setSnake] = useState(initialSnake);
-  const [fruit, setFruit] = useState({ x: 84, y: 48 });
+  const fruit = useRef({ x: 84, y: 48 });
 
   const animate = useCallback(() => {
     if (gamePausedRef.current === false) {
@@ -49,6 +49,12 @@ function App() {
         _snake.unshift(newSnakeHead);
         _snake.pop();
 
+        // handle eating fruit
+        if(fruit.current.x === x && fruit.current.y === y) {
+          console.log("FRUIT");
+          generateFruit();
+        }
+
         // animate
         setSnake((snake) => {
           return { ...snake, body: _snake }
@@ -66,7 +72,7 @@ function App() {
     if (snakeRef.current.body.includes(`${newFruit.x}_${newFruit.y}`)) {
       generateFruit();
     } else {
-      setFruit({ x: getRandomInt(boardWidth), y: getRandomInt(boardHeight)})
+      fruit.current = { x: getRandomInt(boardWidth), y: getRandomInt(boardHeight)}
     }
   }, []);
 
@@ -143,11 +149,12 @@ function App() {
     <>
       <div className="board">
         <Pixels snake={snake} />
-        <Fruit x={fruit.x} y={fruit.y} />
+        <Fruit x={fruit.current.x} y={fruit.current.y} />
       </div>
       <div>Snake: {JSON.stringify(snake)}</div>
       <div>Snake: {JSON.stringify(initialSnake)}</div>
       <div>Snake: {JSON.stringify(snakeRef.current)}</div>
+      <div>Snake: {JSON.stringify(fruit)}</div>
     </>
   )
 }
